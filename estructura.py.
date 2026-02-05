@@ -1,28 +1,51 @@
 import streamlit as st
+import pandas as pd
 
-# 1. Configuración básica de la página
-st.set_page_config(page_title="ESTRUTURA TACTICAL", layout="centered")
+# CONFIGURACIÓN DE PÁGINA PROFESIONAL
+st.set_page_config(page_title="ESTRUTURA TACTICAL", page_icon="🏗️", layout="wide")
 
-# 2. Estilo visual rápido
+# CSS ESTILO INDUSTRIAL / TACTICAL
 st.markdown("""
     <style>
-    .reportview-container { background: #0e1117; }
-    .main-title { color: #f1c40f; font-family: 'Courier New'; text-align: center; border: 2px solid #f1c40f; padding: 10px; }
+    .stApp { background-color: #0b0c10; color: #f1c40f; }
+    .header-box {
+        background-color: #f1c40f; color: black; padding: 30px;
+        text-align: center; border-radius: 0 0 20px 20px;
+        font-family: 'Impact'; letter-spacing: 3px;
+    }
+    .stButton>button {
+        background-color: #f1c40f; color: black; border-radius: 5px;
+        font-weight: bold; width: 100%; border: none;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-# 3. Contenido
-st.markdown('<h1 class="main-title">ESTRUTURA: TACTICAL OPS</h1>', unsafe_allow_html=True)
-st.write("---")
+st.markdown('<div class="header-box"><h1>ESTRUTURA: TACTICAL OPS v1.0</h1></div>', unsafe_allow_html=True)
+st.write("")
 
-st.subheader("Simulador de Aptitud Física")
-nombre = st.text_input("Nombre del Opositor", "Josías Martínez")
-puntos = st.slider("Puntuación Estimada", 0, 30, 15)
+# LÓGICA DE SIMULACIÓN
+col1, col2 = st.columns(2)
 
-if st.button("VERIFICAR ESTADO"):
-    if puntos >= 15:
-        st.success(f"OPERADOR {nombre}: APTO PARA SERVICIO")
+with col1:
+    st.subheader("📋 Baremos de Examen")
+    with st.form("form_opos"):
+        cuerpo = st.selectbox("Oposición", ["Policía Nacional", "Guardia Civil", "Bomberos"])
+        circuito = st.number_input("Circuito (seg)", 7.0, 15.0, 10.0)
+        domis = st.slider("Dominadas", 0, 20, 10)
+        btn = st.form_submit_button("CALCULAR APTITUD")
+
+with col2:
+    if btn:
+        # Cálculo de ejemplo para mostrar resultados
+        nota = round((11 - (circuito - 7)) + (domis * 0.5), 1)
+        st.metric(label="PUNTUACIÓN TOTAL", value=f"{nota} pts")
+        
+        if nota >= 15:
+            st.success("ESTADO: APTO PARA EL CUERPO")
+        else:
+            st.error("ESTADO: NO APTO - MEJORA TUS MARCAS")
     else:
-        st.error(f"OPERADOR {nombre}: NO APTO - SE REQUIERE ENTRENAMIENTO")
+        st.info("Introduce tus datos para iniciar la evaluación táctica.")
 
-st.info("⚠️ Asegúrate de que el archivo requirements.txt esté en tu GitHub con la palabra 'streamlit'.")
+st.markdown("---")
+st.caption("© 2026 ESTRUTURA | Tactical Solutions por Josías Martínez")
