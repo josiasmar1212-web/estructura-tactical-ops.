@@ -1,58 +1,28 @@
 import streamlit as st
-import pandas as pd
 
-# CONFIGURACIÓN BÁSICA
-st.set_page_config(page_title="ESTRUTURA TACTICAL", layout="wide")
+# 1. Configuración básica de la página
+st.set_page_config(page_title="ESTRUTURA TACTICAL", layout="centered")
 
-# DISEÑO INDUSTRIAL
+# 2. Estilo visual rápido
 st.markdown("""
     <style>
-    .stApp { background-color: #0e1117; color: #f1c40f; }
-    .main-title { 
-        background-color: #f1c40f; color: black; 
-        padding: 20px; text-align: center; font-weight: bold;
-        border-radius: 10px; font-size: 30px;
-    }
-    .card {
-        background-color: #1c1f26; border: 2px solid #f1c40f;
-        padding: 20px; border-radius: 15px; margin-top: 20px;
-    }
+    .reportview-container { background: #0e1117; }
+    .main-title { color: #f1c40f; font-family: 'Courier New'; text-align: center; border: 2px solid #f1c40f; padding: 10px; }
     </style>
 """, unsafe_allow_html=True)
 
-# CABECERA
-st.markdown('<div class="main-title">ESTRUTURA: TACTICAL OPS v1.0</div>', unsafe_allow_html=True)
+# 3. Contenido
+st.markdown('<h1 class="main-title">ESTRUTURA: TACTICAL OPS</h1>', unsafe_allow_html=True)
+st.write("---")
 
-# LÓGICA DE NEGOCIO
-col1, col2 = st.columns(2)
+st.subheader("Simulador de Aptitud Física")
+nombre = st.text_input("Nombre del Opositor", "Josías Martínez")
+puntos = st.slider("Puntuación Estimada", 0, 30, 15)
 
-with col1:
-    st.subheader("📋 INGRESO DE MARCAS")
-    with st.form("puntos_form"):
-        genero = st.radio("Género", ["Masculino", "Femenino"])
-        circuito = st.number_input("Circuito Agilidad (seg)", 7.0, 15.0, 10.0)
-        dominadas = st.slider("Dominadas / Suspensión", 0, 20, 10)
-        carrera = st.number_input("1000m (segundos totales)", 180, 300, 210)
-        
-        btn = st.form_submit_button("CALCULAR APTITUD")
-
-with col2:
-    if btn:
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        # Cálculo rápido (Baremos simplificados para el test)
-        puntos = (11 - (circuito - 7)) + (dominadas * 0.5)
-        total = round(max(0, puntos), 1)
-        
-        st.write("### RESULTADO OFICIAL")
-        st.title(f"{total} PUNTOS")
-        
-        if total >= 15:
-            st.success("ESTADO: APTO")
-        else:
-            st.error("ESTADO: NO APTO")
-        st.markdown('</div>', unsafe_allow_html=True)
+if st.button("VERIFICAR ESTADO"):
+    if puntos >= 15:
+        st.success(f"OPERADOR {nombre}: APTO PARA SERVICIO")
     else:
-        st.info("Esperando datos del operador para análisis táctico...")
+        st.error(f"OPERADOR {nombre}: NO APTO - SE REQUIERE ENTRENAMIENTO")
 
-st.divider()
-st.caption("© 2026 ESTRUTURA | Desarrollado por Josías Martínez")
+st.info("⚠️ Asegúrate de que el archivo requirements.txt esté en tu GitHub con la palabra 'streamlit'.")
