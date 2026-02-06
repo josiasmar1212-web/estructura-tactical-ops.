@@ -1,104 +1,112 @@
 import streamlit as st
 import pandas as pd
-import time
-from datetime import datetime
 
-# CONFIGURACIÓN DE ÉLITE
-st.set_page_config(page_title="VORTEX | Academic Intelligence", page_icon="⚖️", layout="wide")
+# CONFIGURACIÓN TÉCNICA
+st.set_page_config(page_title="VORTEX | Plataforma de Inteligencia", page_icon="⚖️", layout="wide")
 
-# CSS PERSONALIZADO: ESTILO ACADEMIA DE ALTO NIVEL
+# CSS PERSONALIZADO (MÁS PROFESIONAL)
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=JetBrains+Mono&display=swap');
-    
-    .stApp { background-color: #010409; color: #c9d1d9; font-family: 'Montserrat', sans-serif; }
-    
-    /* Tarjetas de Temario */
-    .topic-card {
-        background: #0d1117; border: 1px solid #30363d;
-        padding: 20px; border-radius: 12px; margin-bottom: 10px;
-        transition: all 0.3s ease;
-    }
-    .topic-card:hover { border-color: #58a6ff; box-shadow: 0 0 15px rgba(88, 166, 255, 0.1); }
-    
-    /* Frase Motivadora */
-    .quote-box {
-        background: linear-gradient(90deg, #1f6feb 0%, #161b22 100%);
-        padding: 25px; border-radius: 15px; text-align: center;
-        font-style: italic; font-weight: bold; font-size: 1.2rem;
-        border-left: 8px solid #58a6ff; margin: 20px 0;
-    }
-    
-    .highlight { color: #58a6ff; font-family: 'JetBrains Mono', monospace; }
+    .stApp { background-color: #0d1117; color: #c9d1d9; }
+    .main-title { color: #58a6ff; font-family: 'Arial Black'; text-align: center; font-size: 40px; }
+    .quote-card { background: #161b22; border-left: 5px solid #238636; padding: 20px; border-radius: 10px; margin: 20px 0; }
+    .study-box { background: #1c2128; border: 1px solid #30363d; padding: 25px; border-radius: 15px; }
     </style>
 """, unsafe_allow_html=True)
 
+# --- BASE DE DATOS DE EXAMEN (Aquí puedes añadir las 20+ preguntas) ---
+banco_preguntas = [
+    {"p": "¿Cuál es el plazo máximo de detención preventiva?", "o": ["24h", "48h", "72h"], "r": "72h", "ex": "Art. 17.2 CE"},
+    {"p": "¿Quién es el mando superior de las Fuerzas y Cuerpos de Seguridad?", "o": ["El Rey", "El Ministro del Interior", "El Presidente"], "r": "El Ministro del Interior", "ex": "Ley 2/86"},
+    {"p": "¿Qué mayoría se requiere para aprobar una Ley Orgánica?", "o": ["Simple", "Absoluta", "Tres quintos"], "r": "Absoluta", "ex": "Art. 81 CE"},
+    {"p": "¿Qué título de la Constitución trata de los Derechos Fundamentales?", "o": ["Título I", "Título II", "Título Preliminar"], "r": "Título I", "ex": "Constitución Española"},
+    # Añade aquí todas las preguntas que quieras siguiendo el mismo formato...
+]
+
 # --- CABECERA ---
+st.markdown('<h1 class="main-title">VORTEX ACADEMIC</h1>', unsafe_allow_html=True)
 st.markdown("""
-<div style="text-align: center; padding-bottom: 20px;">
-    <h1 style="font-size: 3rem; margin-bottom: 0;">VORTEX <span style="color:#58a6ff;">ACADEMIC</span></h1>
-    <p style="opacity: 0.6; letter-spacing: 2px;">INTELIGENCIA APLICADA AL ÉXITO EN OPOSICIONES</p>
+<div class="quote-card">
+    "El éxito no es el final, el fracaso no es fatal: lo que cuenta es el valor para continuar." 🛡️
 </div>
 """, unsafe_allow_html=True)
 
-# --- FRASE MOTIVADORA DINÁMICA ---
-st.markdown("""
-<div class="quote-box">
-    "La disciplina es el puente entre tus metas y tus logros. Tu plaza no se hereda, se conquista cada mañana de estudio." 🛡️
-</div>
-""", unsafe_allow_html=True)
+menu = st.sidebar.selectbox("NAVEGACIÓN", ["🎯 EXAMEN DE PRESIÓN", "📚 BIBLIOTECA INTERACTIVA", "📊 MI PROGRESO"])
 
-# --- NAVEGACIÓN LATERAL ---
-with st.sidebar:
-    st.markdown("### 👤 PANEL DEL ASPIRANTE")
-    st.write(f"**Operador:** {st.text_input('ID', 'Josías')}")
-    st.progress(0.65, text="Progreso Temario: 65%")
-    st.divider()
-    menu = st.radio("SISTEMA", ["📚 BIBLIOTECA DE TEMAS", "📝 SIMULADOR EXAMEN", "📊 TENDENCIAS 2022-2026"])
+# --- SECCIÓN 1: EXAMEN CONTINUO ---
+if menu == "🎯 EXAMEN DE PRESIÓN":
+    st.subheader("Simulador de Examen Oficial")
+    
+    if 'pregunta_actual' not in st.session_state:
+        st.session_state.pregunta_actual = 0
+        st.session_state.puntos = 0
 
-if menu == "📚 BIBLIOTECA DE TEMAS":
-    st.subheader("📚 TEMARIO OFICIAL ACTUALIZADO")
+    if st.session_state.pregunta_actual < len(banco_preguntas):
+        progreso = (st.session_state.pregunta_actual / len(banco_preguntas))
+        st.progress(progreso)
+        
+        q = banco_preguntas[st.session_state.pregunta_actual]
+        st.write(f"### Pregunta {st.session_state.pregunta_actual + 1}:")
+        st.info(q["p"])
+        
+        respuesta = st.radio("Selecciona tu respuesta:", q["o"], key=f"q_{st.session_state.pregunta_actual}")
+        
+        if st.button("CONFIRMAR Y SIGUIENTE ➡️"):
+            if respuesta == q["r"]:
+                st.session_state.puntos += 1
+                st.success(f"¡Correcto! {q['ex']}")
+            else:
+                st.error(f"Fallo. La respuesta era {q['r']}. {q['ex']}")
+            
+            st.session_state.pregunta_actual += 1
+            st.rerun() # Esto hace que pase a la siguiente inmediatamente
+    else:
+        st.balloons()
+        st.header("¡EXAMEN FINALIZADO!")
+        st.metric("Puntuación Final", f"{st.session_state.puntos}/{len(banco_preguntas)}")
+        if st.button("REPETIR EXAMEN"):
+            st.session_state.pregunta_actual = 0
+            st.session_state.puntos = 0
+            st.rerun()
+
+# --- SECCIÓN 2: BIBLIOTECA CON REPASOS ---
+elif menu == "📚 BIBLIOTECA INTERACTIVA":
+    st.subheader("Temario Oficial y Guías de Repaso")
     
     col1, col2 = st.columns(2)
+    
     with col1:
-        with st.container():
-            st.markdown('<div class="topic-card"><h4>⚖️ DERECHO CONSTITUCIONAL</h4><p>Temas 1 al 10: La Corona, Poder Judicial, Derechos Fundamentales.</p></div>', unsafe_allow_html=True)
-            if st.button("Ver Esquemas de Repaso", key="btn1"): st.write("Cargando mapas mentales...")
-            
-        with st.container():
-            st.markdown('<div class="topic-card"><h4>🚓 SEGURIDAD Y CIENCIAS</h4><p>Temas 11 al 20: LO 2/86, Fuerzas y Cuerpos de Seguridad.</p></div>', unsafe_allow_html=True)
-            if st.button("Ver Resúmenes Clave", key="btn2"): st.write("Preparando PDF...")
+        with st.expander("⚖️ TEMA 1: LA CONSTITUCIÓN"):
+            st.write("Estudio profundo de la norma suprema.")
+            if st.button("VER RESUMEN DE REPASO"):
+                st.markdown("""
+                <div class="study-box">
+                    <h4>Puntos Clave Tema 1:</h4>
+                    <ul>
+                        <li><b>Soberanía:</b> Reside en el pueblo español.</li>
+                        <li><b>Forma Política:</b> Monarquía Parlamentaria.</li>
+                        <li><b>Valores Superiores:</b> Libertad, Justicia, Igualdad y Pluralismo Político.</li>
+                    </ul>
+                </div>
+                """, unsafe_allow_html=True)
 
     with col2:
-        st.info("💡 **TIP DE ESTUDIO:** El Tema 4 (Unión Europea) ha caído en el 90% de los exámenes de los últimos 5 años. Priorízalo.")
-        st.image("https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60")
+        with st.expander("🚓 TEMA 2: FUERZAS DE SEGURIDAD"):
+            st.write("Ley Orgánica 2/1986.")
+            if st.button("VER ESQUEMA TÁCTICO"):
+                st.markdown("""
+                <div class="study-box">
+                    <h4>Jerarquía de Mando:</h4>
+                    1. Ministro del Interior <br>
+                    2. Secretarios de Estado <br>
+                    3. Directores Generales
+                </div>
+                """, unsafe_allow_html=True)
 
-elif menu == "📝 SIMULADOR EXAMEN":
-    st.subheader("📝 MODO SIMULACRO REAL")
-    st.write("Haz clic para iniciar un test de 10 preguntas aleatorias con tiempo controlado.")
-    
-    if st.button("🚀 INICIAR TEST DE PRESIÓN"):
-        with st.empty():
-            for i in range(5, 0, -1):
-                st.markdown(f"<h1 style='text-align:center;'>Iniciando en {i}...</h1>", unsafe_allow_html=True)
-                time.sleep(1)
-        st.warning("PREGUNTA 1: ¿Cuál es el plazo máximo de la detención preventiva según la Constitución?")
-        ans = st.radio("Selecciona una opción:", ["24 horas", "48 horas", "72 horas"])
-        if st.button("Confirmar Respuesta"):
-            if ans == "72 horas": st.success("¡CORRECTO! +1 punto")
-            else: st.error("INCORRECTO. Revisa el Art. 17.2")
-
-elif menu == "📊 TENDENCIAS 2022-2026":
-    st.subheader("📊 ANÁLISIS DE CONVOCATORIAS ANTERIORES")
-    st.write("Datos extraídos de las últimas plantillas de corrección oficiales.")
-    
-    data = pd.DataFrame({
-        'Área': ['Constitucional', 'Penal', 'Administrativo', 'Socio', 'Técnico'],
-        'Preguntas/Año (Media)': [15, 20, 10, 25, 30]
-    })
-    st.bar_chart(data.set_index('Área'))
-    st.markdown("""
-    **Conclusiones de VORTEX Intelligence:**
-    1. El bloque **Técnico** (Armas, Informática) ha subido un 15% en importancia.
-    2. En 2024, las preguntas de **Derecho Penal** fueron las que más eliminaron aspirantes.
-    """)
+# --- SECCIÓN 3: PROGRESO ---
+elif menu == "📊 MI PROGRESO":
+    st.subheader("Estadísticas de Estudio")
+    st.write("Aquí podrás ver cómo evolucionas cada semana.")
+    # Datos de ejemplo
+    df = pd.DataFrame({"Semana": ["Sem 1", "Sem 2", "Sem 3"], "Aciertos": [10, 15, 18]})
+    st.line_chart(df.set_index("Semana"))
