@@ -1,165 +1,192 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
-from datetime import datetime
 import time
+from datetime import datetime
 
-# 1. CONFIGURACIÓN DEL SISTEMA
-st.set_page_config(page_title="VORTEX ACADEMIC | Elite Intelligence", page_icon="🛡️", layout="wide")
+# 1. CONFIGURACIÓN DEL SISTEMA CENTRAL
+st.set_page_config(page_title="VORTEX | Enterprise Academic", page_icon="🛡️", layout="wide")
 
-# 2. DISEÑO INDUSTRIAL AVANZADO (CSS)
+# 2. INTERFAZ PROFESIONAL "VORTEX DARK"
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=JetBrains+Mono&display=swap');
     
-    .stApp { background-color: #050505; color: #e0e0e0; font-family: 'Inter', sans-serif; }
+    .stApp { background-color: #0d1117; color: #c9d1d9; font-family: 'Inter', sans-serif; }
     
-    .vortex-header {
-        background: linear-gradient(135deg, #0d1117 0%, #1a1a1a 100%);
-        padding: 60px; border-radius: 30px; border: 1px solid #38bdf8;
-        text-align: center; box-shadow: 0 0 40px rgba(56, 189, 248, 0.1);
-        margin-bottom: 40px;
+    .main-header {
+        background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+        padding: 45px; border-radius: 20px; border-bottom: 2px solid #58a6ff;
+        text-align: center; margin-bottom: 30px;
     }
     
-    .vortex-title { font-family: 'Orbitron', sans-serif; color: #38bdf8; font-size: 4.5rem; letter-spacing: 10px; margin: 0; }
-    
-    .card-pro {
-        background: rgba(255, 255, 255, 0.02); border: 1px solid #333;
-        padding: 25px; border-radius: 20px; margin-bottom: 20px;
-        transition: 0.3s all;
+    .vortex-card {
+        background: #161b22; border: 1px solid #30363d;
+        padding: 25px; border-radius: 15px; margin-bottom: 20px;
+        transition: transform 0.2s, border-color 0.2s;
     }
-    .card-pro:hover { border-color: #38bdf8; background: rgba(56, 189, 248, 0.05); }
+    .vortex-card:hover { border-color: #58a6ff; transform: translateY(-2px); }
     
-    .status-online { color: #00ff41; font-weight: bold; text-shadow: 0 0 10px #00ff41; }
-    
-    .stButton>button {
-        background: linear-gradient(90deg, #38bdf8 0%, #1e40af 100%);
-        color: white; border: none; border-radius: 10px; font-weight: bold;
-        padding: 15px; width: 100%; transition: 0.3s;
+    .download-btn {
+        background-color: #238636; color: white; padding: 10px 20px;
+        border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;
     }
-    .stButton>button:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(56, 189, 248, 0.4); }
+    
+    .quote-box {
+        font-family: 'JetBrains Mono', monospace; color: #f1c40f;
+        background: rgba(241, 196, 15, 0.05); padding: 15px;
+        border-radius: 10px; border-left: 5px solid #f1c40f;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-# 3. INICIALIZACIÓN DE VARIABLES (ESTADO DE SESIÓN)
-if 'score_total' not in st.session_state: st.session_state.score_total = 0
-if 'intentos' not in st.session_state: st.session_state.intentos = 0
+# --- BASE DE DATOS AMPLIADA (20 PREGUNTAS CLAVE) ---
+banco_preguntas = [
+    {"p": "¿Qué artículo define a España como un Estado social y democrático de Derecho?", "o": ["Art. 1", "Art. 2", "Art. 9"], "r": "Art. 1"},
+    {"p": "¿Cuál es la forma política del Estado español?", "o": ["República", "Monarquía Parlamentaria", "Monarquía Federal"], "r": "Monarquía Parlamentaria"},
+    {"p": "¿A quién pertenece la soberanía nacional?", "o": ["Al Rey", "Al Pueblo Español", "A las Cortes"], "r": "Al Pueblo Español"},
+    {"p": "¿Qué mayoría se requiere para aprobar una Ley Orgánica?", "o": ["Simple", "Absoluta", "2/3"], "r": "Absoluta"},
+    {"p": "¿Cuál es el plazo de la detención preventiva por delitos de terrorismo (prórroga)?", "o": ["48h", "72h", "48h más"], "r": "48h más"},
+    {"p": "¿Qué Título de la CE trata de los derechos y deberes fundamentales?", "o": ["Preliminar", "Título I", "Título II"], "r": "Título I"},
+    {"p": "¿Quién nombra a los Ministros?", "o": ["El Rey", "El Presidente", "Las Cortes"], "r": "El Rey"},
+    {"p": "¿Qué mayoría se requiere para la reforma agravada (Art. 168)?", "o": ["3/5", "2/3", "Absoluta"], "r": "2/3"},
+    {"p": "¿Quién es el Jefe de las Fuerzas Armadas?", "o": ["Presidente", "Ministro Defensa", "El Rey"], "r": "El Rey"},
+    {"p": "¿Cuál es la edad mínima para ser Senador?", "o": ["18", "21", "25"], "r": "18"},
+    {"p": "¿Qué órgano controla la constitucionalidad de las leyes?", "o": ["Tribunal Supremo", "Tribunal Constitucional", "Fiscalía"], "r": "Tribunal Constitucional"},
+    {"p": "¿Cuánto dura el mandato del Defensor del Pueblo?", "o": ["4 años", "5 años", "9 años"], "r": "5 años"},
+    {"p": "¿Cuántos diputados componen el Congreso?", "o": ["Entre 300 y 400", "350 fijos", "400 fijos"], "r": "Entre 300 y 400"},
+    {"p": "¿Qué lengua es oficial en todo el Estado?", "o": ["Todas", "Castellano", "Gallego"], "r": "Castellano"},
+    {"p": "¿A quién corresponde la dirección de la política interior y exterior?", "o": ["Al Rey", "Al Gobierno", "A las Cortes"], "r": "Al Gobierno"},
+    {"p": "¿Quién preside el Consejo de Ministros?", "o": ["El Rey", "El Presidente del Gobierno", "El Ministro Portavoz"], "r": "El Presidente del Gobierno"},
+    {"p": "¿Qué mayoría se requiere para la moción de censura?", "o": ["Simple", "Absoluta", "2/3"], "r": "Absoluta"},
+    {"p": "¿Quién disuelve las Cortes Generales?", "o": ["El Presidente", "El Rey", "El Tribunal Supremo"], "r": "El Rey"},
+    {"p": "¿Cuál es la capital del Estado?", "o": ["Madrid", "Barcelona", "Toledo"], "r": "Madrid"},
+    {"p": "¿Qué valor superior NO aparece en el Art. 1.1?", "o": ["Libertad", "Justicia", "Fraternidad"], "r": "Fraternidad"}
+]
 
 # --- CABECERA ---
 st.markdown("""
-<div class="vortex-header">
-    <h1 class="vortex-title">VORTEX</h1>
-    <p style="opacity: 0.6; font-size: 1.2rem;">ACADEMIC INTELLIGENCE SYSTEM v10.0</p>
-    <p class="status-online">● SYSTEM ONLINE - SECURE CONNECTION</p>
+<div class="main-header">
+    <h1 style="font-size: 3.5rem; color: #58a6ff; margin: 0;">VORTEX <span style="color:white;">ACADEMIC</span></h1>
+    <p style="letter-spacing: 3px; opacity: 0.8;">SISTEMA DE PREPARACIÓN TÁCTICA PROFESIONAL</p>
 </div>
 """, unsafe_allow_html=True)
 
-# --- SIDEBAR PROFESIONAL ---
+# --- SIDEBAR ---
 with st.sidebar:
-    st.markdown("### 👤 OPERADOR")
-    st.text_input("NOMBRE DE CLAVE", value="JOSÍAS MARTÍNEZ")
-    st.markdown("### 🚀 PROGRESO DE NIVEL")
-    st.progress(0.75)
-    st.caption("Nivel 7: Especialista en Derecho")
+    st.image("https://cdn-icons-png.flaticon.com/512/3407/3407024.png", width=100)
+    st.markdown("### 👤 PANEL DE CONTROL")
+    nombre = st.text_input("ASPIRANTE", "Josías Martínez")
+    st.success("Estado: Conectado")
     st.divider()
-    menu = st.radio("SISTEMA CENTRAL", 
-                    ["DASHBOARD", "SIMULADOR EXAMEN", "BIBLIOTECA LEYES", "AGENDA TÁCTICA", "LOGROS"])
+    menu = st.radio("MÓDULOS", ["🏠 Dashboard", "📝 Examen Real", "📂 Descargas Temarios", "📊 Estadísticas"])
 
-# --- MODULO 1: DASHBOARD ---
-if menu == "DASHBOARD":
+# --- SECCIÓN 1: DASHBOARD ---
+if menu == "🏠 Dashboard":
+    st.markdown("""
+    <div class="quote-box">
+        "La disciplina es hacer lo que hay que hacer, incluso cuando no tienes ganas. Tu plaza se gana hoy." 🛡️
+    </div>
+    """, unsafe_allow_html=True)
+    
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.markdown('<div class="card-pro"><h3>🎯 PRECISIÓN</h3><h1>89.4%</h1><p>+2.1% esta semana</p></div>', unsafe_allow_html=True)
+        st.markdown('<div class="vortex-card"><h3>📚 Temas Leídos</h3><h1>14 / 28</h1></div>', unsafe_allow_html=True)
     with col2:
-        st.markdown('<div class="card-pro"><h3>⏱️ TIEMPO/PREG</h3><h1>42s</h1><p>Meta: 35s</p></div>', unsafe_allow_html=True)
+        st.markdown('<div class="vortex-card"><h3>✅ Tests Hechos</h3><h1>124</h1></div>', unsafe_allow_html=True)
     with col3:
-        st.markdown('<div class="card-pro"><h3>🔥 RACHA</h3><h1>14 DÍAS</h1><p>¡Nivel Imparable!</p></div>', unsafe_allow_html=True)
-    
-    st.subheader("📊 MAPA DE DOMINIO TÉCNICO")
-    df_radar = pd.DataFrame(dict(
-        r=[90, 85, 40, 70, 60],
-        theta=['Constitucional', 'Penal', 'Administrativo', 'Social', 'Inglés']))
-    fig = px.line_polar(df_radar, r='r', theta='theta', line_close=True)
-    fig.update_traces(fill='toself', line_color='#38bdf8')
-    fig.update_layout(template="plotly_dark", polar=dict(radialaxis=dict(visible=False)))
-    st.plotly_chart(fig, use_container_width=True)
+        st.markdown('<div class="vortex-card"><h3>🔥 Racha Actual</h3><h1>5 Días</h1></div>', unsafe_allow_html=True)
 
-# --- MODULO 2: SIMULADOR DE EXAMEN ---
-elif menu == "SIMULADOR EXAMEN":
-    st.subheader("📝 MODO EXAMEN: CONVOCATORIA 2026")
-    
-    with st.expander("⚙️ AJUSTES DE SIMULACRO"):
-        st.selectbox("Dificultad", ["Oficial", "Extremo", "Solo Falladas"])
-        st.checkbox("Penalización por fallo (1/2)", value=True)
-
-    # Base de datos expandida
-    preguntas = [
-        {"p": "¿Cuántas disposiciones adicionales tiene la Constitución?", "o": ["4", "9", "2"], "r": "4", "h": "Art. Final CE"},
-        {"p": "¿Qué Título regula la reforma constitucional?", "o": ["Título IX", "Título X", "Título VIII"], "r": "Título X", "h": "Arts. 166-168"},
-        {"p": "¿Quién es el Defensor del Pueblo?", "o": ["Comisionado de las Cortes", "Mando Policial", "Juez Supremo"], "r": "Comisionado de las Cortes", "h": "Art. 54 CE"},
-        {"p": "¿Cuál es la mayoría para reformar el Título Preliminar?", "o": ["3/5", "2/3", "Absoluta"], "r": "2/3", "h": "Procedimiento Agravado"},
-        {"p": "¿Qué plazo tiene el Rey para sancionar las leyes?", "o": ["10 días", "15 días", "20 días"], "r": "15 días", "h": "Art. 91 CE"}
-    ]
-
-    score = 0
-    fallos = 0
-    with st.form("test_vortex"):
-        for i, q in enumerate(preguntas):
-            st.write(f"**{i+1}. {q['p']}**")
-            choice = st.radio("Respuesta:", q['o'], key=f"p_{i}")
-            if choice == q['r']: score += 1
-            else: fallos += 1
-            st.divider()
-        
-        if st.form_submit_button("FINALIZAR Y CALCULAR NOTA"):
-            nota_final = score - (fallos * 0.5)
-            st.session_state.score_total = max(0, nota_final)
-            if nota_final >= 2.5:
-                st.balloons()
-                st.success(f"NOTA: {nota_final}/5 - APTO")
-            else:
-                st.error(f"NOTA: {nota_final}/5 - NO APTO")
-
-# --- MODULO 3: BIBLIOTECA DE LEYES ---
-elif menu == "BIBLIOTECA LEYES":
-    st.subheader("📚 REPOSITORIO DE INTELIGENCIA JURÍDICA")
-    
-    search = st.text_input("🔍 BUSCAR ARTÍCULO O TEMA", placeholder="Ej: Habeas Corpus...")
-    
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown('<div class="card-pro"><h4>CONSTITUCIÓN ESPAÑOLA</h4><p>Resúmenes por Títulos y esquemas visuales.</p></div>', unsafe_allow_html=True)
-        if st.button("ABRIR TEMA 1"):
-            st.info("**Art. 1:** España se constituye en un Estado social y democrático de Derecho...")
-    with c2:
-        st.markdown('<div class="card-pro"><h4>DERECHO PENAL</h4><p>Código Penal actualizado a 2026.</p></div>', unsafe_allow_html=True)
-        if st.button("VER PENAS"):
-            st.warning("Prisión permanente revisable: Solo en casos del Art. 140.")
-
-# --- MODULO 4: AGENDA TÁCTICA ---
-elif menu == "AGENDA TÁCTICA":
-    st.subheader("📅 ORGANIZADOR DE ALTO RENDIMIENTO")
-    dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
-    tareas = ["Constitución", "Derecho Penal", "Psicotécnicos", "Inglés/Ortografía", "Repaso General", "Simulacro", "Descanso"]
-    
-    agenda = pd.DataFrame({"Día": dias, "Materia Principal": tareas, "Estado": ["Completado", "En proceso", "Pendiente", "Pendiente", "Pendiente", "Pendiente", "Pendiente"]})
+    st.subheader("📅 Plan Semanal")
+    agenda = pd.DataFrame({
+        "Día": ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"],
+        "Materia": ["Constitucional", "Derecho Penal", "Sociología", "Ortografía", "Simulacro"]
+    })
     st.table(agenda)
 
-# --- MODULO 5: LOGROS ---
-elif menu == "LOGROS":
-    st.subheader("🏅 MEDALLERO DE OPERADOR")
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        st.markdown("⭐ **EL ERUDITO**")
-        st.caption("Has completado 500 preguntas.")
-    with c2:
-        st.markdown("🔥 **IMPARABLE**")
-        st.caption("7 días de racha de estudio.")
-    with c3:
-        st.markdown("🎯 **PRECISIÓN QUIRÚRGICA**")
-        st.caption("Examen con 0 fallos.")
+# --- SECCIÓN 2: EXAMEN REAL ---
+elif menu == "📝 Examen Real":
+    st.subheader("📝 SIMULADOR DE EXAMEN OFICIAL")
+    st.write("Responde a las preguntas. Recuerda que cada fallo resta 0.5 puntos.")
+    
+    if 'index_p' not in st.session_state:
+        st.session_state.index_p = 0
+        st.session_state.aciertos = 0
+        st.session_state.fallos = 0
+
+    if st.session_state.index_p < len(banco_preguntas):
+        q = banco_preguntas[st.session_state.index_p]
+        st.progress((st.session_state.index_p + 1) / len(banco_preguntas))
+        
+        st.markdown(f"#### Pregunta {st.session_state.index_p + 1}:")
+        st.info(q["p"])
+        
+        opcion = st.radio("Selecciona:", q["o"], key=f"p_{st.session_state.index_p}")
+        
+        if st.button("CONFIRMAR RESPUESTA"):
+            if opcion == q["r"]:
+                st.session_state.aciertos += 1
+                st.toast("✅ Correcto")
+            else:
+                st.session_state.fallos += 1
+                st.toast("❌ Error")
+            
+            st.session_state.index_p += 1
+            st.rerun()
+    else:
+        st.balloons()
+        nota = st.session_state.aciertos - (st.session_state.fallos * 0.5)
+        st.markdown(f"""
+        <div class="vortex-card" style="text-align:center;">
+            <h2>RESULTADO FINAL</h2>
+            <h1 style="color:#58a6ff;">{nota} / 20</h1>
+            <p>Aciertos: {st.session_state.aciertos} | Fallos: {st.session_state.fallos}</p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("REINICIAR TEST"):
+            st.session_state.index_p = 0
+            st.session_state.aciertos = 0
+            st.session_state.fallos = 0
+            st.rerun()
+
+# --- SECCIÓN 3: DESCARGAS ---
+elif menu == "📂 Descargas Temarios":
+    st.subheader("📂 REPOSITORIO DE TEMARIOS 2026")
+    st.write("Descarga los PDF oficiales resumidos para tu estudio.")
+    
+    temas = [
+        {"nombre": "Bloque I: Derecho Constitucional", "peso": "2.4 MB", "actualizado": "Ene 2026"},
+        {"nombre": "Bloque II: Derecho Penal", "peso": "1.8 MB", "actualizado": "Feb 2026"},
+        {"nombre": "Bloque III: Ciencias Sociales", "peso": "3.1 MB", "actualizado": "Dic 2025"},
+        {"nombre": "Bloque IV: Materias Técnicas", "peso": "4.5 MB", "actualizado": "Feb 2026"}
+    ]
+    
+    for t in temas:
+        with st.container():
+            col_a, col_b = st.columns([3, 1])
+            with col_a:
+                st.markdown(f"**{t['nombre']}** \n*Tamaño: {t['peso']} | Actualizado: {t['actualizado']}*")
+            with col_b:
+                if st.button(f"Descargar", key=t['nombre']):
+                    st.success("Iniciando descarga...")
+            st.divider()
+
+# --- SECCIÓN 4: ESTADÍSTICAS ---
+elif menu == "📊 Estadísticas":
+    st.subheader("📊 ANÁLISIS DE RENDIMIENTO")
+    
+    # Gráfico de quesito pro
+    df_graf = pd.DataFrame({
+        "Área": ["Constitucional", "Penal", "Social", "Técnico"],
+        "Nivel": [85, 40, 65, 30]
+    })
+    
+    fig = px.pie(df_graf, values='Nivel', names='Area', title='Dominio de Materias', hole=0.4)
+    fig.update_layout(template="plotly_dark", plot_bgcolor='rgba(0,0,0,0)')
+    st.plotly_chart(fig, use_container_width=True)
+    
+    st.info("💡 Consejo de VORTEX: Tu rendimiento en Derecho Penal es bajo. Prioriza los temas 10 al 14 esta semana.")
 
 # --- FOOTER ---
 st.markdown("---")
-st.markdown('<p style="text-align:center; opacity:0.5;">VORTEX ACADEMIC © 2026 | Desarrollado por Josías Martínez</p>', unsafe_allow_html=True)
+st.caption("VORTEX ACADEMIC © 2026 | Desarrollado para el éxito de Josías.")
