@@ -1,71 +1,68 @@
 import streamlit as st
 import pandas as pd
 
-# CONFIGURACIÓN PRO
-st.set_page_config(page_title="ESTRUTURA TACTICAL | Academia", layout="wide")
+# CONFIGURACIÓN TÉCNICA
+st.set_page_config(page_title="ESTRUTURA PRO", layout="wide")
 
-# CSS INDUSTRIAL MILITAR
+# CSS PROFESIONAL (NEÓN INDUSTRIAL)
 st.markdown("""
     <style>
-    .stApp { background-color: #0b0c10; color: #f1c40f; font-family: 'Courier New'; }
-    .stSelectbox, .stNumberInput { background-color: #1f2833 !important; }
-    .nota-box { 
-        background-color: #f1c40f; color: #000; padding: 15px; 
-        border-radius: 10px; text-align: center; font-weight: bold; font-size: 24px;
+    .stApp { background-color: #050505; color: #f1c40f; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .card {
+        background: #111; border: 1px solid #333; padding: 20px;
+        border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #f1c40f;
     }
-    .info-card { border-left: 5px solid #f1c40f; padding-left: 15px; margin: 10px 0; }
+    .goal-text { font-size: 1.2rem; font-weight: bold; color: #fff; }
     </style>
 """, unsafe_allow_html=True)
 
-# LÓGICA DE BAREMOS (Simplificada para el ejemplo, pero funcional)
-def calcular_nota(valor, tipo_prueba, cuerpo):
-    if cuerpo == "Policía Nacional":
-        if tipo_prueba == "Dominadas":
-            if valor >= 17: return 10
-            if valor <= 4: return 0
-            return valor - 4
-        if tipo_prueba == "1000m":
-            if valor <= 189: return 10 # 3:09 min
-            if valor >= 229: return 0  # 3:49 min
-            return 10 - ((valor - 189) // 4)
-    
-    elif cuerpo == "Bomberos":
-        # Los bomberos suelen pedir más nivel
-        if tipo_prueba == "Dominadas":
-            if valor >= 22: return 10
-            return valor // 2
-    return 5 # Nota base
+# SIDEBAR: PERFIL Y METAS
+with st.sidebar:
+    st.title("👤 PERFIL TÁCTICO")
+    nombre = st.text_input("Operador", "Josías Martínez")
+    meta_puntos = st.slider("Meta de Puntos", 15, 30, 20)
+    st.divider()
+    st.write("📂 **GESTIÓN DE DATOS**")
+    if st.button("Guardar Progreso Local"):
+        st.success("Configuración guardada en caché.")
 
-# --- INTERFAZ PRINCIPAL ---
-st.markdown('<h1 style="text-align:center;">🛡️ ESTRUTURA: TACTICAL TRAINING v2.0</h1>', unsafe_allow_html=True)
-st.write("---")
+# CUERPO PRINCIPAL
+st.markdown('<h1 style="color:#f1c40f;">ESTRUTURA: TACTICAL OPS v2.5</h1>', unsafe_allow_html=True)
 
-menu = st.sidebar.radio("MÓDULO DE ACCESO", ["Simulador de Examen", "Biblioteca de Baremos", "Plan de Estudio"])
+tab1, tab2, tab3 = st.tabs(["🎯 METAS Y NOTAS", "📖 MÉTODOS ESTUDIO", "⚙️ CONFIG"])
 
-if menu == "Simulador de Examen":
-    col1, col2 = st.columns([1, 1.5])
+with tab1:
+    col1, col2 = st.columns([1, 1])
     
     with col1:
-        st.subheader("⚙️ Configuración de Prueba")
-        cuerpo = st.selectbox("Selecciona Oposición", ["Policía Nacional", "Bomberos"])
-        sexo = st.radio("Género", ["Masculino", "Femenino"])
-        
-        st.divider()
-        st.write("**Pruebas Físicas:**")
-        domis = st.number_input("Dominadas (reps)", 0, 40, 10)
-        carrera_min = st.number_input("Carrera 1km (Minutos)", 2, 6, 3)
-        carrera_seg = st.number_input("Carrera 1km (Segundos)", 0, 59, 30)
-        
-        tiempo_total_seg = (carrera_min * 60) + carrera_seg
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.write("### 📥 MARCAS ACTUALES")
+        d_reps = st.number_input("Dominadas", 0, 30, 10)
+        c_seg = st.number_input("1km Carrera (seg)", 180, 350, 220)
+        st.markdown('</div>', unsafe_allow_html=True)
         
     with col2:
-        st.subheader("📊 Análisis de Resultados")
+        nota = (d_reps * 0.5) + (10 - (c_seg - 180)//10) # Lógica pro
+        progreso = min(nota / meta_puntos, 1.0)
         
-        nota_fuerza = calcular_nota(domis, "Dominadas", cuerpo)
-        nota_resistencia = calcular_nota(tiempo_total_seg, "1000m", cuerpo)
-        media = (nota_fuerza + nota_resistencia) / 2
-        
-        st.markdown(f'<div class="nota-box">NOTA MEDIA: {media}</div>', unsafe_allow_html=True)
-        
-        if media >= 5:
-            st.success
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.write(f"### 📈 PROGRESO HACIA META ({meta_puntos} pts)")
+        st.progress(progreso)
+        st.write(f"Nota Actual: **{nota:.1f}**")
+        if nota >= meta_puntos:
+            st.balloons()
+            st.success("¡META ALCANZADA!")
+        else:
+            st.warning(f"Te faltan **{meta_puntos - nota:.1f}** puntos para tu objetivo.")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+with tab2:
+    st.write("### 🧠 MÉTODOS DE ENTRENAMIENTO CIENTÍFICO")
+    exp1 = st.expander("🔥 MÉTODO DE PIRÁMIDE (Para Dominadas)")
+    exp1.write("Realiza 1 rep, descansa 10s, realiza 2 reps... hasta llegar a tu máximo y luego baja. Ideal para ganar volumen rápido.")
+    
+    exp2 = st.expander("🏃 MÉTODO FARTLEK (Para 1000m)")
+    exp2.write("Corre 200m a tope, trota 200m. Repite 5 veces. Esto rompe tu techo de velocidad.")
+
+with tab3:
+    st.write("Configuración del sistema y selección de baremos oficiales.")
