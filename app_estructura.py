@@ -3,143 +3,166 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
-import time
 
-# 1. CONFIGURACIÓN DE SISTEMA EMPRESARIAL
-st.set_page_config(page_title="VORTEX ACADEMIC | Enterprise", page_icon="🛡️", layout="wide")
+# 1. CORE CONFIGURATION
+st.set_page_config(page_title="VORTEX ACADEMIC | Enterprise OS", page_icon="🛡️", layout="wide")
 
-# 2. ESTILO VISUAL "TACTICAL DARK" (CSS AVANZADO)
+# 2. ELITE INTERFACE DESIGN (CSS)
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;700&family=Inter:wght@400;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Outfit:wght@300;700&display=swap');
     
-    .stApp { background-color: #0b0e14; color: #c9d1d9; font-family: 'Inter', sans-serif; }
+    .stApp { background-color: #0b0e14; color: #e6edf3; font-family: 'Outfit', sans-serif; }
     
-    /* Cabecera de Impacto */
-    .hero-section {
-        background: linear-gradient(135deg, #0d1117 0%, #1a2234 100%);
-        padding: 60px; border-radius: 25px; border: 1px solid #30363d;
-        text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-        margin-bottom: 40px; border-bottom: 4px solid #58a6ff;
+    .vortex-header {
+        background: linear-gradient(135deg, #161b22 0%, #0d1117 100%);
+        padding: 50px; border-radius: 20px; border: 1px solid #30363d;
+        text-align: center; margin-bottom: 40px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     }
     
-    .vortex-title { font-family: 'JetBrains Mono', monospace; font-size: 5rem; font-weight: 800; color: #58a6ff; margin: 0; }
-    
-    /* Tarjetas Pro */
-    .feature-card {
-        background: #161b22; border: 1px solid #30363d; padding: 25px;
-        border-radius: 15px; transition: all 0.3s ease;
+    .content-card {
+        background: #161b22; border: 1px solid #30363d;
+        padding: 25px; border-radius: 15px; margin-bottom: 20px;
     }
-    .feature-card:hover { border-color: #58a6ff; transform: translateY(-5px); box-shadow: 0 10px 20px rgba(88, 166, 255, 0.1); }
     
-    .metric-value { font-family: 'JetBrains Mono', monospace; font-size: 2.5rem; color: #ffffff; }
-    
-    /* Botones Estilo Academia */
-    .stButton>button {
-        background: #238636; color: white; border: none; padding: 12px 24px;
-        border-radius: 8px; font-weight: bold; width: 100%; transition: 0.2s;
+    .download-bar {
+        background: #21262d; border-left: 5px solid #238636;
+        padding: 15px; border-radius: 8px; margin: 10px 0;
+        display: flex; justify-content: space-between; align-items: center;
     }
-    .stButton>button:hover { background: #2ea043; border-color: #58a6ff; }
+    
+    .status-badge {
+        padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;
+    }
+    
+    .stTabs [data-baseweb="tab-list"] { gap: 15px; }
+    .stTabs [data-baseweb="tab"] {
+        background-color: #161b22; border-radius: 10px 10px 0 0; color: #8b949e;
+        height: 50px; padding: 0 30px;
+    }
+    .stTabs [aria-selected="true"] { background-color: #58a6ff !important; color: white !important; }
     </style>
 """, unsafe_allow_html=True)
 
-# 3. LÓGICA DE DATOS (BANCO DE PREGUNTAS AMPLIADO A 30+)
-banco_full = [
-    {"p": "¿A quién corresponde la Jefatura Superior de todas las FFCCS?", "o": ["El Rey", "Ministro del Interior", "Presidente del Gobierno"], "r": "Ministro del Interior", "cat": "Leyes"},
-    {"p": "¿Qué Título de la CE trata del Poder Judicial?", "o": ["Título IV", "Título V", "Título VI"], "r": "Título VI", "cat": "Constitución"},
-    {"p": "¿Cuántos magistrados componen el Tribunal Supremo?", "o": ["10", "12", "Depende de la Sala"], "r": "Depende de la Sala", "cat": "Justicia"},
-    {"p": "¿Cuál es la mayoría para aprobar una reforma ordinaria (167)?", "o": ["Simple", "Absoluta", "3/5"], "r": "3/5", "cat": "Constitución"},
-    {"p": "¿Qué derecho NO es fundamental según la Sección 1ª?", "o": ["Vida", "Propiedad Privada", "Educación"], "r": "Propiedad Privada", "cat": "Derechos"},
-    {"p": "¿Qué plazo tiene el Congreso para convalidar un Real Decreto-Ley?", "o": ["15 días", "30 días", "60 días"], "r": "30 días", "cat": "Leyes"},
-    {"p": "¿Quién nombra al Fiscal General del Estado?", "o": ["Las Cortes", "El Rey", "El Gobierno"], "r": "El Rey", "cat": "Justicia"},
-] # Nota: Aquí puedes seguir pegando hasta 100 preguntas siguiendo el formato.
+# --- CABECERA ---
+st.markdown("""
+<div class="vortex-header">
+    <h1 style="font-family: 'JetBrains Mono'; font-size: 4.5rem; color: #58a6ff; margin:0;">VORTEX</h1>
+    <p style="letter-spacing: 8px; font-weight: 300; opacity: 0.7;">ACADEMIC MANAGEMENT SYSTEM v17.0</p>
+</div>
+""", unsafe_allow_html=True)
 
-# 4. ESTRUCTURA DE NAVEGACIÓN TÁCTICA
+# --- SISTEMA DE SESIÓN ---
+if 'user_role' not in st.session_state: st.session_state.user_role = "ALUMNO"
+
+# --- SIDEBAR AVANZADA ---
 with st.sidebar:
-    st.markdown("<h2 style='text-align:center;'>VORTEX NAV</h2>", unsafe_allow_html=True)
-    access_type = st.selectbox("IDENTIFICACIÓN", ["🛡️ OPERADOR (Alumno)", "🏢 COMANDO (Academia)"])
+    st.markdown("### 🏢 PORTAL DE ACCESO")
+    role_select = st.selectbox("IDENTIFICACIÓN", ["👨‍🎓 ALUMNO ELITE", "👑 DIRECTOR ACADEMIA"])
+    st.session_state.user_role = role_select
     st.divider()
     
-    if access_type == "🛡️ OPERADOR (Alumno)":
-        nav = st.radio("SECCIONES", ["📊 Mi Dashboard", "📝 Examen Real", "🧩 Psicotécnicos", "📚 Temario PDF", "💬 Soporte"])
+    if st.session_state.user_role == "👨‍🎓 ALUMNO ELITE":
+        menu = st.radio("MÓDULOS DE ESTUDIO", ["📊 Mi Panel", "📚 Biblioteca & PDF", "📝 Sala de Examen", "🎥 Videoclases", "💬 Soporte Técnico"])
     else:
-        nav = st.radio("GESTIÓN", ["📈 Métrica Global", "👥 Alumnado", "📢 Mensajería", "🛠️ Config. Aula"])
+        menu = st.radio("CENTRO DE COMANDO", ["📈 Dashboard Global", "👥 Control Alumnos", "📂 Gestor de Contenidos", "💰 Facturación", "⚙️ Configuración"])
 
-# --- VISTA: OPERADOR (ALUMNO) ---
-if access_type == "🛡️ OPERADOR (Alumno)":
-    if nav == "📊 Mi Dashboard":
-        st.markdown('<div class="hero-section"><h1 class="vortex-title">VORTEX</h1><p>CENTRO DE OPERACIONES PERSONALES</p></div>', unsafe_allow_html=True)
-        
+# --- VISTA ALUMNO ---
+if st.session_state.user_role == "👨‍🎓 ALUMNO ELITE":
+    
+    if menu == "📊 Mi Panel":
         c1, c2, c3, c4 = st.columns(4)
-        with c1: st.markdown('<div class="feature-card"><h3>🔥 Racha</h3><p class="metric-value">14 d</p></div>', unsafe_allow_html=True)
-        with c2: st.markdown('<div class="feature-card"><h3>🎯 Media</h3><p class="metric-value">8.4</p></div>', unsafe_allow_html=True)
-        with c3: st.markdown('<div class="feature-card"><h3>✅ Tests</h3><p class="metric-value">128</p></div>', unsafe_allow_html=True)
-        with c4: st.markdown('<div class="feature-card"><h3>🏆 Rango</h3><p class="metric-value">Sgt.</p></div>', unsafe_allow_html=True)
+        c1.metric("Progreso Total", "72%", "+3%")
+        c2.metric("Nota Media", "8.1", "+0.2")
+        c3.metric("Ranking", "12 / 1,450", "▲ 2")
+        c4.metric("Días Restantes", "94", "⚠️")
         
-        st.subheader("📉 PROGRESO SEMANAL")
-        chart_data = pd.DataFrame({"Día": ["Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom"], "Horas": [4, 6, 5, 8, 4, 10, 2]})
-        st.area_chart(chart_data.set_index("Día"))
-
-    elif nav == "📝 Examen Real":
-        st.header("📝 SIMULADOR DE CONVOCATORIA")
-        st.warning("⚠️ El tiempo empezará a contar al confirmar la primera respuesta.")
-        
-        if 'p_idx' not in st.session_state: st.session_state.p_idx = 0
-        
-        if st.session_state.p_idx < len(banco_full):
-            q = banco_full[st.session_state.p_idx]
-            st.markdown(f"**PREGUNTA {st.session_state.p_idx + 1}:**")
-            st.info(q["p"])
-            ans = st.radio("Seleccione opción:", q["o"], key=f"ex_{st.session_state.p_idx}")
-            if st.button("CONFIRMAR Y SIGUIENTE"):
-                st.session_state.p_idx += 1
-                st.rerun()
-        else:
-            st.balloons()
-            st.success("SIMULACRO FINALIZADO. DATOS ENVIADOS A LA ACADEMIA.")
-            if st.button("REINICIAR"): st.session_state.p_idx = 0; st.rerun()
-
-    elif nav == "🧩 Psicotécnicos":
-        st.header("🧩 ENTRENAMIENTO MENTAL")
-        st.write("Mejora tu agilidad con retos de lógica y matemáticas rápidas.")
-        st.markdown('<div class="feature-card"><b>RETO DEL DÍA:</b> ¿Qué número sigue la serie: 2, 4, 8, 16...?</div>', unsafe_allow_html=True)
-        if st.button("VER SOLUCIÓN"): st.write("Respuesta: 32 (Potencias de 2)")
-
-# --- VISTA: COMANDO (ADMINISTRADOR) ---
-else:
-    if nav == "📈 Métrica Global":
-        st.header("📈 DASHBOARD DE RENDIMIENTO GRUPAL")
-        
-        col1, col2, col3 = st.columns(3)
-        with col1: st.metric("Alumnos Conectados", "452", "+12%")
-        with col2: st.metric("Media de la Academia", "6.72", "-0.1")
-        with col3: st.metric("Tests hoy", "1,840", "+25%")
-        
-        st.subheader("📊 ANÁLISIS DE DEBILIDADES POR TEMA")
-        df_fail = pd.DataFrame({
-            "Materia": ["Penal", "Constitucional", "Sociales", "Armas", "Ortografía"],
-            "Aciertos (%)": [42, 85, 66, 51, 78]
-        })
-        fig = px.bar(df_fail, x="Materia", y="Aciertos (%)", color="Aciertos (%)", color_continuous_scale="RdYlGn")
-        st.plotly_chart(fig, use_container_width=True)
-        st.error("🚩 **ALERTA DE PROFESOR:** El bloque de 'Derecho Penal' está por debajo del 50%. Se requiere refuerzo.")
-
-    elif nav == "📢 Mensajería":
-        st.header("📢 COMUNICACIÓN DIRECTA")
-        st.write("Envía notificaciones push a todos tus alumnos o responde dudas.")
-        st.text_area("Nuevo Aviso Global", placeholder="Ej: La clase de mañana se retrasa a las 10:00...")
-        st.button("ENVIAR NOTIFICACIÓN")
-        
-        st.divider()
+        st.subheader("🗓️ Próximas Clases en Directo")
         st.markdown("""
-        <div class="feature-card">
-            <b>Duda de Alumno #1240:</b> "¿El Rey puede negarse a firmar un decreto?"
-            <br><small>Hace 5 minutos</small>
+        <div class="content-card">
+            <b>MAÑANA 18:00h:</b> Repaso Intensivo Título I - <i>Prof. García</i> <span class="status-badge" style="background:#238636">Confirmado</span>
+            <br><small>Link de Zoom disponible 10 min antes.</small>
         </div>
         """, unsafe_allow_html=True)
-        st.text_input("Responder...")
-        st.button("Enviar Respuesta")
+        
+        # Gráfico de Radar de Competencias
+        st.subheader("🧠 Mapa de Competencias Tácticas")
+        df_radar = pd.DataFrame(dict(r=[90, 85, 40, 70, 95], theta=['Constitución','Penal','Social','Técnico','Ortografía']))
+        fig = px.line_polar(df_radar, r='r', theta='theta', line_close=True)
+        fig.update_traces(fill='toself', line_color='#58a6ff')
+        fig.update_layout(template="plotly_dark", polar=dict(radialaxis=dict(visible=False)))
+        st.plotly_chart(fig, use_container_width=True)
+
+    elif menu == "📚 Biblioteca & PDF":
+        st.header("📂 Repositorio de Materiales")
+        tab_a, tab_b, tab_c = st.tabs(["📕 JURÍDICO", "📘 SOCIALES", "📗 TÉCNICO"])
+        
+        with tab_a:
+            temas = [
+                {"id": "T1", "t": "La Constitución de 1978", "est": "Completo", "f": "02/02/2026"},
+                {"id": "T2", "t": "Derechos y Deberes", "est": "En repaso", "f": "04/02/2026"},
+                {"id": "T3", "t": "La Corona y el Rey", "est": "Pendiente", "f": "--"}
+            ]
+            for t in temas:
+                st.markdown(f"""
+                <div class="download-bar">
+                    <div><b>{t['id']}:</b> {t['t']} <small>({t['est']})</small></div>
+                    <button style="background:#58a6ff; border:none; color:white; border-radius:5px; padding:5px 15px; cursor:pointer;">DESCARGAR PDF</button>
+                </div>
+                """, unsafe_allow_html=True)
+
+    elif menu == "📝 Sala de Examen":
+        st.subheader("📝 Simulacro de Examen Oficial")
+        st.info("Este examen consta de 20 preguntas con penalización de -0.5 por fallo.")
+        
+        # Banco Expandido (Fragmento para el código)
+        banco = [
+            {"p": "¿Qué mayoría se requiere para aprobar una Ley Orgánica?", "o": ["Simple", "Absoluta", "2/3"], "r": "Absoluta"},
+            {"p": "¿Cuál es el plazo máximo de detención preventiva?", "o": ["24h", "48h", "72h"], "r": "72h"},
+            {"p": "¿A quién pertenece la soberanía nacional?", "o": ["Rey", "Pueblo", "Cortes"], "r": "Pueblo"}
+        ]
+        
+        with st.form("exam_form"):
+            for i, q in enumerate(banco):
+                st.write(f"**{i+1}. {q['p']}**")
+                st.radio("Opciones:", q['o'], key=f"q_{i}")
+                st.divider()
+            if st.form_submit_button("FINALIZAR EXAMEN"):
+                st.success("Resultados guardados. Tu profesor recibirá el informe en 60 segundos.")
+
+# --- VISTA DIRECTOR ---
+else:
+    if menu == "📈 Dashboard Global":
+        st.header("👑 Panel de Control de Dirección")
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown('<div class="content-card"><h4>Matrículas Activas</h4><h1 style="color:#58a6ff">2,450</h1></div>', unsafe_allow_html=True)
+        with col2:
+            st.markdown('<div class="content-card"><h4>Ingresos Mensuales</h4><h1 style="color:#238636">122.400€</h1></div>', unsafe_allow_html=True)
+        with col3:
+            st.markdown('<div class="content-card"><h4>Tasa de Éxito</h4><h1 style="color:#f1c40f">84%</h1></div>', unsafe_allow_html=True)
+            
+        st.subheader("📊 Rendimiento Global por Temas")
+        df_stats = pd.DataFrame({
+            "Tema": ["Título I", "Derecho Penal", "Unión Europea", "Armamento", "Sociología"],
+            "Aciertos Globales": [85, 42, 55, 30, 72]
+        })
+        fig_bar = px.bar(df_stats, x="Tema", y="Aciertos Globales", color="Aciertos Globales", color_continuous_scale="RdYlGn")
+        st.plotly_chart(fig_bar, use_container_width=True)
+        st.error("🚨 ATENCIÓN: El tema 'Armamento' requiere una clase de refuerzo urgente.")
+
+    elif menu == "👥 Control Alumnos":
+        st.subheader("Gestión de Alumnado")
+        search = st.text_input("🔍 Buscar alumno por nombre o DNI")
+        df_alumnos = pd.DataFrame({
+            "Alumno": ["Josías Martínez", "Ana Pérez", "Carlos Ruiz"],
+            "Progreso": ["92%", "45%", "12%"],
+            "Última Nota": [9.4, 5.2, 3.1],
+            "Riesgo": ["Bajo", "Medio", "ALTO"]
+        })
+        st.table(df_alumnos)
 
 # --- FOOTER ---
 st.markdown("---")
-st.caption("VORTEX ACADEMIC ENTERPRISE v15.0 | Secure Login: AES-256 | © 2026 Josías Martínez")
+st.caption("VORTEX ACADEMIC ENTERPRISE v17.0 | Cloud Intelligence for Civil Guard & Police Academies")
