@@ -1,168 +1,165 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import time
+import plotly.graph_objects as go
 from datetime import datetime
+import time
 
-# 1. CONFIGURACIÓN DE ALTO NIVEL
-st.set_page_config(page_title="VORTEX ACADEMIC | Elite Suite", page_icon="🛡️", layout="wide")
+# 1. CONFIGURACIÓN DEL SISTEMA
+st.set_page_config(page_title="VORTEX ACADEMIC | Elite Intelligence", page_icon="🛡️", layout="wide")
 
-# 2. ESTILO INDUSTRIAL DEEP-BLUE (CSS PERSONALIZADO)
+# 2. DISEÑO INDUSTRIAL AVANZADO (CSS)
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Roboto+Condensed:wght@700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;700&display=swap');
     
-    .stApp { background-color: #05070a; color: #e6edf3; font-family: 'JetBrains Mono', monospace; }
+    .stApp { background-color: #050505; color: #e0e0e0; font-family: 'Inter', sans-serif; }
     
-    .main-header {
-        background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
-        padding: 50px; border-radius: 20px; border: 2px solid #30363d;
-        text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 30px;
+    .vortex-header {
+        background: linear-gradient(135deg, #0d1117 0%, #1a1a1a 100%);
+        padding: 60px; border-radius: 30px; border: 1px solid #38bdf8;
+        text-align: center; box-shadow: 0 0 40px rgba(56, 189, 248, 0.1);
+        margin-bottom: 40px;
     }
     
-    .stTabs [data-baseweb="tab-list"] { gap: 10px; background-color: #0d1117; padding: 10px; border-radius: 15px; }
-    .stTabs [data-baseweb="tab"] {
-        height: 60px; background-color: #161b22; border: 1px solid #30363d;
-        color: #8b949e; border-radius: 10px; font-weight: bold;
-    }
-    .stTabs [aria-selected="true"] { color: #58a6ff !important; border-color: #58a6ff !important; background: #0d1117 !important; }
+    .vortex-title { font-family: 'Orbitron', sans-serif; color: #38bdf8; font-size: 4.5rem; letter-spacing: 10px; margin: 0; }
     
-    .info-card {
-        background: #0d1117; border-top: 4px solid #f1c40f;
-        padding: 20px; border-radius: 10px; margin-bottom: 15px;
+    .card-pro {
+        background: rgba(255, 255, 255, 0.02); border: 1px solid #333;
+        padding: 25px; border-radius: 20px; margin-bottom: 20px;
+        transition: 0.3s all;
     }
+    .card-pro:hover { border-color: #38bdf8; background: rgba(56, 189, 248, 0.05); }
     
-    .quote-text { color: #f1c40f; font-size: 1.4rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
+    .status-online { color: #00ff41; font-weight: bold; text-shadow: 0 0 10px #00ff41; }
+    
+    .stButton>button {
+        background: linear-gradient(90deg, #38bdf8 0%, #1e40af 100%);
+        color: white; border: none; border-radius: 10px; font-weight: bold;
+        padding: 15px; width: 100%; transition: 0.3s;
+    }
+    .stButton>button:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(56, 189, 248, 0.4); }
     </style>
 """, unsafe_allow_html=True)
 
-# --- INICIALIZACIÓN DE DATOS (Mantiene la info guardada) ---
-if 'ranking' not in st.session_state:
-    st.session_state.ranking = pd.DataFrame({"Usuario": ["Admin", "Josías", "User01"], "Puntos": [95, 88, 72]})
-if 'respuestas_correctas' not in st.session_state:
-    st.session_state.respuestas_correctas = 0
+# 3. INICIALIZACIÓN DE VARIABLES (ESTADO DE SESIÓN)
+if 'score_total' not in st.session_state: st.session_state.score_total = 0
+if 'intentos' not in st.session_state: st.session_state.intentos = 0
 
-# --- CABECERA DINÁMICA ---
+# --- CABECERA ---
 st.markdown("""
-<div class="main-header">
-    <h1 style="font-family: 'Roboto Condensed', sans-serif; font-size: 4rem; margin:0; color:#58a6ff;">VORTEX <span style="color:#ffffff;">ACADEMIC</span></h1>
-    <p style="color:#8b949e; font-size: 1.2rem;">ESTADO DEL SISTEMA: <span style="color:#238636;">FULLY OPERATIONAL</span></p>
-    <div style="margin-top:20px;">
-        <span class="quote-text">"La victoria ama la preparación."</span>
-    </div>
+<div class="vortex-header">
+    <h1 class="vortex-title">VORTEX</h1>
+    <p style="opacity: 0.6; font-size: 1.2rem;">ACADEMIC INTELLIGENCE SYSTEM v10.0</p>
+    <p class="status-online">● SYSTEM ONLINE - SECURE CONNECTION</p>
 </div>
 """, unsafe_allow_html=True)
 
-# --- NAVEGACIÓN POR PESTAÑAS ---
-tab_home, tab_exams, tab_library, tab_analytics, tab_admin = st.tabs([
-    "🏠 INICIO", "📝 EXÁMENES REALES", "📚 TEMARIO 2026", "📊 INTELIGENCIA", "⚙️ CONFIG"
-])
+# --- SIDEBAR PROFESIONAL ---
+with st.sidebar:
+    st.markdown("### 👤 OPERADOR")
+    st.text_input("NOMBRE DE CLAVE", value="JOSÍAS MARTÍNEZ")
+    st.markdown("### 🚀 PROGRESO DE NIVEL")
+    st.progress(0.75)
+    st.caption("Nivel 7: Especialista en Derecho")
+    st.divider()
+    menu = st.radio("SISTEMA CENTRAL", 
+                    ["DASHBOARD", "SIMULADOR EXAMEN", "BIBLIOTECA LEYES", "AGENDA TÁCTICA", "LOGROS"])
 
-# --- PESTAÑA 1: HOME ---
-with tab_home:
-    col_l, col_r = st.columns([2, 1])
-    with col_l:
-        st.markdown("### 📢 ÚLTIMAS ACTUALIZACIONES")
-        st.info("**CONVOCATORIA 2026:** Publicada actualización del Tema 14 (Derecho Penal). Revisa los nuevos baremos.")
-        st.success("**NUEVO RECURSO:** Añadido examen oficial de la convocatoria 2025.")
-        
-        st.markdown("### 🏆 RANKING DE ASPIRANTES (TOP 3)")
-        st.table(st.session_state.ranking)
+# --- MODULO 1: DASHBOARD ---
+if menu == "DASHBOARD":
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown('<div class="card-pro"><h3>🎯 PRECISIÓN</h3><h1>89.4%</h1><p>+2.1% esta semana</p></div>', unsafe_allow_html=True)
+    with col2:
+        st.markdown('<div class="card-pro"><h3>⏱️ TIEMPO/PREG</h3><h1>42s</h1><p>Meta: 35s</p></div>', unsafe_allow_html=True)
+    with col3:
+        st.markdown('<div class="card-pro"><h3>🔥 RACHA</h3><h1>14 DÍAS</h1><p>¡Nivel Imparable!</p></div>', unsafe_allow_html=True)
     
-    with col_r:
-        st.markdown("### 🎯 OBJETIVOS DIARIOS")
-        st.checkbox("Completar 50 preguntas de test", value=True)
-        st.checkbox("Repasar Título I de la Constitución")
-        st.checkbox("Realizar simulacro cronometrado")
-        st.divider()
-        st.markdown('<div class="info-card"><b>DATO CLAVE:</b> El 80% de los aptos estudiaron una media de 6h diarias los últimos 3 meses.</div>', unsafe_allow_html=True)
+    st.subheader("📊 MAPA DE DOMINIO TÉCNICO")
+    df_radar = pd.DataFrame(dict(
+        r=[90, 85, 40, 70, 60],
+        theta=['Constitucional', 'Penal', 'Administrativo', 'Social', 'Inglés']))
+    fig = px.line_polar(df_radar, r='r', theta='theta', line_close=True)
+    fig.update_traces(fill='toself', line_color='#38bdf8')
+    fig.update_layout(template="plotly_dark", polar=dict(radialaxis=dict(visible=False)))
+    st.plotly_chart(fig, use_container_width=True)
 
-# --- PESTAÑA 2: EXÁMENES (BANCO DE PREGUNTAS) ---
-with tab_exams:
-    st.subheader("📝 MÓDULO DE EVALUACIÓN TÁCTICA")
+# --- MODULO 2: SIMULADOR DE EXAMEN ---
+elif menu == "SIMULADOR EXAMEN":
+    st.subheader("📝 MODO EXAMEN: CONVOCATORIA 2026")
     
-    # Base de datos ampliada
-    banco = [
-        {"p": "¿A quién corresponde la Jefatura de las Fuerzas Armadas?", "o": ["Ministro de Defensa", "El Rey", "Presidente del Gobierno"], "r": "El Rey"},
-        {"p": "¿Qué mayoría se requiere para la aprobación de una Ley Orgánica?", "o": ["Simple", "Tres quintos", "Absoluta"], "r": "Absoluta"},
-        {"p": "¿Cuál es la edad mínima para ser elegido Diputado?", "o": ["18 años", "21 años", "25 años"], "r": "18 años"},
-        {"p": "¿Qué órgano garantiza la primacía de la Constitución?", "o": ["Tribunal Supremo", "Tribunal Constitucional", "Cortes Generales"], "r": "Tribunal Constitucional"},
-        {"p": "¿Quién nombra al Fiscal General del Estado?", "o": ["El Rey", "El Gobierno", "El Congreso"], "r": "El Rey"},
-        {"p": "¿Cuál es el máximo de detención preventiva sin intervención judicial?", "o": ["24h", "48h", "72h"], "r": "72h"},
-        {"p": "¿Qué Título trata de la Organización Territorial?", "o": ["Título VIII", "Título IX", "Título X"], "r": "Título VIII"},
-        {"p": "¿Cuántos miembros componen el Tribunal Constitucional?", "o": ["10", "12", "15"], "r": "12"},
-        {"p": "¿Cuál es la duración del mandato de los Diputados?", "o": ["4 años", "5 años", "6 años"], "r": "4 años"},
-        {"p": "¿Qué lengua es oficial en todo el territorio?", "o": ["Todas", "Castellano", "Lenguas cooficiales"], "r": "Castellano"}
+    with st.expander("⚙️ AJUSTES DE SIMULACRO"):
+        st.selectbox("Dificultad", ["Oficial", "Extremo", "Solo Falladas"])
+        st.checkbox("Penalización por fallo (1/2)", value=True)
+
+    # Base de datos expandida
+    preguntas = [
+        {"p": "¿Cuántas disposiciones adicionales tiene la Constitución?", "o": ["4", "9", "2"], "r": "4", "h": "Art. Final CE"},
+        {"p": "¿Qué Título regula la reforma constitucional?", "o": ["Título IX", "Título X", "Título VIII"], "r": "Título X", "h": "Arts. 166-168"},
+        {"p": "¿Quién es el Defensor del Pueblo?", "o": ["Comisionado de las Cortes", "Mando Policial", "Juez Supremo"], "r": "Comisionado de las Cortes", "h": "Art. 54 CE"},
+        {"p": "¿Cuál es la mayoría para reformar el Título Preliminar?", "o": ["3/5", "2/3", "Absoluta"], "r": "2/3", "h": "Procedimiento Agravado"},
+        {"p": "¿Qué plazo tiene el Rey para sancionar las leyes?", "o": ["10 días", "15 días", "20 días"], "r": "15 días", "h": "Art. 91 CE"}
     ]
-    
-    # Lógica de examen
-    st.write(f"Preguntas cargadas en memoria: **{len(banco)}**")
-    score = 0
-    with st.form("examen_form"):
-        for i, q in enumerate(banco):
-            st.markdown(f"**{i+1}. {q['p']}**")
-            st.radio("Opciones:", q['o'], key=f"ans_{i}")
-            st.write("---")
-        
-        if st.form_submit_button("CALCULAR RESULTADO FINAL"):
-            st.balloons()
-            st.write("### ANALIZANDO DATOS...")
-            # Aquí iría la lógica de corrección automática...
-            st.success("SIMULACRO FINALIZADO. REVISA TUS FALLOS EN EL RECORRIDO.")
 
-# --- PESTAÑA 3: TEMARIO (LA BIBLIOTECA) ---
-with tab_library:
-    st.subheader("📚 REPOSITORIO DE INTELIGENCIA")
+    score = 0
+    fallos = 0
+    with st.form("test_vortex"):
+        for i, q in enumerate(preguntas):
+            st.write(f"**{i+1}. {q['p']}**")
+            choice = st.radio("Respuesta:", q['o'], key=f"p_{i}")
+            if choice == q['r']: score += 1
+            else: fallos += 1
+            st.divider()
+        
+        if st.form_submit_button("FINALIZAR Y CALCULAR NOTA"):
+            nota_final = score - (fallos * 0.5)
+            st.session_state.score_total = max(0, nota_final)
+            if nota_final >= 2.5:
+                st.balloons()
+                st.success(f"NOTA: {nota_final}/5 - APTO")
+            else:
+                st.error(f"NOTA: {nota_final}/5 - NO APTO")
+
+# --- MODULO 3: BIBLIOTECA DE LEYES ---
+elif menu == "BIBLIOTECA LEYES":
+    st.subheader("📚 REPOSITORIO DE INTELIGENCIA JURÍDICA")
     
+    search = st.text_input("🔍 BUSCAR ARTÍCULO O TEMA", placeholder="Ej: Habeas Corpus...")
+    
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown('<div class="card-pro"><h4>CONSTITUCIÓN ESPAÑOLA</h4><p>Resúmenes por Títulos y esquemas visuales.</p></div>', unsafe_allow_html=True)
+        if st.button("ABRIR TEMA 1"):
+            st.info("**Art. 1:** España se constituye en un Estado social y democrático de Derecho...")
+    with c2:
+        st.markdown('<div class="card-pro"><h4>DERECHO PENAL</h4><p>Código Penal actualizado a 2026.</p></div>', unsafe_allow_html=True)
+        if st.button("VER PENAS"):
+            st.warning("Prisión permanente revisable: Solo en casos del Art. 140.")
+
+# --- MODULO 4: AGENDA TÁCTICA ---
+elif menu == "AGENDA TÁCTICA":
+    st.subheader("📅 ORGANIZADOR DE ALTO RENDIMIENTO")
+    dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+    tareas = ["Constitución", "Derecho Penal", "Psicotécnicos", "Inglés/Ortografía", "Repaso General", "Simulacro", "Descanso"]
+    
+    agenda = pd.DataFrame({"Día": dias, "Materia Principal": tareas, "Estado": ["Completado", "En proceso", "Pendiente", "Pendiente", "Pendiente", "Pendiente", "Pendiente"]})
+    st.table(agenda)
+
+# --- MODULO 5: LOGROS ---
+elif menu == "LOGROS":
+    st.subheader("🏅 MEDALLERO DE OPERADOR")
     c1, c2, c3 = st.columns(3)
     with c1:
-        st.markdown("#### ⚖️ BLOQUE JURÍDICO")
-        with st.expander("TEMA 1: LA CONSTITUCIÓN"):
-            st.write("PDF: Resumen esquemático del Título Preliminar al Título X.")
-            st.button("DESBLOQUEAR TEMA 1")
-        with st.expander("TEMA 3: DERECHO PENAL"):
-            st.write("Gráficos de tipos delictivos y penas.")
-            st.button("DESBLOQUEAR TEMA 3")
-            
+        st.markdown("⭐ **EL ERUDITO**")
+        st.caption("Has completado 500 preguntas.")
     with c2:
-        st.markdown("#### 👥 BLOQUE SOCIAL")
-        with st.expander("TEMA 15: SOCIOLOGÍA"):
-            st.write("Conceptos de masa, sociedad y cultura.")
-            st.button("DESBLOQUEAR TEMA 15")
-            
+        st.markdown("🔥 **IMPARABLE**")
+        st.caption("7 días de racha de estudio.")
     with c3:
-        st.markdown("#### 💻 BLOQUE TÉCNICO")
-        with st.expander("TEMA 28: CIBERSEGURIDAD"):
-            st.write("Protocolos TCP/IP, malware y delitos informáticos.")
-            st.button("DESBLOQUEAR TEMA 28")
+        st.markdown("🎯 **PRECISIÓN QUIRÚRGICA**")
+        st.caption("Examen con 0 fallos.")
 
-# --- PESTAÑA 4: ANALYTICS (Gŕaficos) ---
-with tab_analytics:
-    st.subheader("📊 MAPA DE CALOR DE RENDIMIENTO")
-    
-    stats_data = pd.DataFrame({
-        'Tema': ['Derecho', 'Social', 'Técnico', 'Psicotécnico', 'Ortografía'],
-        'Nivel (%)': [85, 60, 45, 90, 75]
-    })
-    
-    fig = px.bar(stats_data, x='Tema', y='Nivel (%)', color='Nivel (%)',
-                 color_continuous_scale='Blues', title="Dominio por Bloques")
-    fig.update_layout(template="plotly_dark")
-    st.plotly_chart(fig, use_container_width=True)
-    
-    st.info("💡 **ANÁLISIS VORTEX:** Tu punto más débil es el bloque **TÉCNICO**. Se recomienda dedicar 2h extra los martes y jueves.")
-
-# --- PESTAÑA 5: ADMIN (GUARDAR Y SALIR) ---
-with tab_admin:
-    st.subheader("⚙️ CONTROL DE DATOS")
-    st.write("Desde aquí puedes gestionar tu cuenta y exportar tu progreso.")
-    
-    if st.button("EXPORTAR PROGRESO A PDF"):
-        st.write("Generando documento táctico...")
-    
-    if st.button("LIMPIAR CACHÉ DE ESTUDIO"):
-        st.warning("Esto borrará tus notas actuales.")
-
-# --- PIE DE PÁGINA ---
+# --- FOOTER ---
 st.markdown("---")
-st.caption("VORTEX ACADEMIC © 2026 | Sistema Propiedad de Josías Martínez")
+st.markdown('<p style="text-align:center; opacity:0.5;">VORTEX ACADEMIC © 2026 | Desarrollado por Josías Martínez</p>', unsafe_allow_html=True)
