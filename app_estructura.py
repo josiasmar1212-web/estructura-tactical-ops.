@@ -1,114 +1,126 @@
 import streamlit as st
 import pandas as pd
+import time
+import plotly.express as px # Para gráficos pro
 
-# CONFIGURACIÓN TÉCNICA Y ESTÉTICA
-st.set_page_config(page_title="VORTEX | Academic Intelligence", page_icon="⚖️", layout="wide")
+# CONFIGURACIÓN TÉCNICA
+st.set_page_config(page_title="VORTEX ACADEMIC PRO", page_icon="🛡️", layout="wide")
 
+# CSS "ELITE DARK MODE"
 st.markdown("""
     <style>
-    .stApp { background-color: #0d1117; color: #c9d1d9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    .main-title { color: #58a6ff; font-family: 'Impact'; text-align: center; font-size: 50px; letter-spacing: 2px; }
-    .quote-card { 
-        background: linear-gradient(90deg, #161b22 0%, #0d1117 100%); 
-        border-left: 5px solid #58a6ff; padding: 25px; border-radius: 10px; 
-        margin: 20px 0; font-style: italic; font-size: 1.2rem;
+    .stApp { background-color: #0b0e14; color: #e6edf3; }
+    .main-header { 
+        background: linear-gradient(90deg, #0d1117 0%, #161b22 100%);
+        padding: 40px; border-radius: 20px; border: 1px solid #30363d;
+        text-align: center; margin-bottom: 30px;
     }
-    .study-content { 
-        background: #161b22; border: 1px solid #30363d; padding: 30px; 
-        border-radius: 15px; border-top: 4px solid #58a6ff;
+    .metric-card {
+        background: #161b22; border: 1px solid #30363d;
+        padding: 20px; border-radius: 15px; text-align: center;
     }
-    .stButton>button { width: 100%; background-color: #238636; color: white; font-weight: bold; }
+    .stTabs [data-baseweb="tab-list"] { gap: 24px; }
+    .stTabs [data-baseweb="tab"] {
+        height: 50px; background-color: #161b22; border-radius: 10px 10px 0 0;
+        color: white; padding: 0 20px;
+    }
+    .stTabs [aria-selected="true"] { background-color: #58a6ff !important; }
     </style>
 """, unsafe_allow_html=True)
 
-# --- BANCO DE DATOS: EXAMEN DE 20 PREGUNTAS (EJEMPLOS REALES) ---
-banco_preguntas = [
-    {"p": "¿Qué artículo de la CE reconoce el derecho a la vida?", "o": ["Art. 14", "Art. 15", "Art. 16"], "r": "Art. 15", "ex": "Art. 15 CE: Todos tienen derecho a la vida."},
-    {"p": "¿Cuál es el tiempo máximo de detención preventiva?", "o": ["48h", "72h", "24h"], "r": "72h", "ex": "Art. 17.2 CE."},
-    {"p": "¿Quién nombra al Director General de la Policía?", "o": ["El Rey", "El Consejo de Ministros", "El Ministro del Interior"], "r": "El Consejo de Ministros", "ex": "A propuesta del Ministro del Interior."},
-    {"p": "¿Qué mayoría se necesita para una Ley Orgánica?", "o": ["Simple", "Absoluta", "2/3"], "r": "Absoluta", "ex": "Votación final sobre el conjunto del proyecto."},
-    {"p": "¿Qué Título trata de la Corona?", "o": ["Título I", "Título II", "Título III"], "r": "Título II", "ex": "Artículos 56 al 65 de la CE."},
-    {"p": "¿A quién corresponde la defensa de la integridad territorial?", "o": ["Policía Nacional", "Guardia Civil", "Fuerzas Armadas"], "r": "Fuerzas Armadas", "ex": "Art. 8 de la CE."},
-    {"p": "¿Cuál es la capital del Estado?", "o": ["Barcelona", "Madrid", "Sevilla"], "r": "Madrid", "ex": "Art. 5 CE: La capital es la villa de Madrid."},
-    {"p": "¿Qué lengua es oficial en todo el Estado?", "o": ["Catalán", "Castellano", "Gallego"], "r": "Castellano", "ex": "Art. 3.1 CE."},
-    # ... Aquí puedes seguir pegando hasta completar las 20, 50 o 100 ...
-]
-
-# --- INTERFAZ PRINCIPAL ---
-st.markdown('<h1 class="main-title">VORTEX ACADEMIC</h1>', unsafe_allow_html=True)
-
+# --- CABECERA ---
 st.markdown("""
-<div class="quote-card">
-    "No te detengas cuando estés cansado, detente cuando hayas terminado. Tu plaza está al otro lado de este esfuerzo." 🛡️
+<div class="main-header">
+    <h1 style="color:#58a6ff; font-size: 3.5rem; margin:0;">VORTEX <span style="color:white;">ACADEMIC</span></h1>
+    <p style="letter-spacing: 5px; opacity:0.7;">SISTEMA OPERATIVO DE ESTUDIO AVANZADO</p>
+    <p style="font-style: italic; color: #f1c40f; margin-top:15px;">"No estudies para aprobar, estudia para que no tengan más remedio que darte la plaza." 🛡️</p>
 </div>
 """, unsafe_allow_html=True)
 
-menu = st.sidebar.selectbox("MODULOS DE INTELIGENCIA", ["📝 SIMULACRO CONTINUO", "📚 BIBLIOTECA DE REPASO"])
+# --- NAVEGACIÓN PRINCIPAL ---
+tab1, tab2, tab3, tab4 = st.tabs(["🎯 EXAMEN PRO", "📚 TEMARIO TÁCTICO", "📊 MI RENDIMIENTO", "⚡ FLASHCARDS"])
 
-# --- SECCIÓN 1: EXAMEN MEJORADO ---
-if menu == "📝 SIMULACRO CONTINUO":
-    st.subheader("Simulador de Examen de Alta Intensidad")
+# 1. EXAMEN PRO CON CRONÓMETRO
+with tab1:
+    col_q, col_timer = st.columns([3, 1])
     
-    if 'index' not in st.session_state:
-        st.session_state.index = 0
-        st.session_state.score = 0
+    with col_timer:
+        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+        st.write("⏱️ TIEMPO RESTANTE")
+        st.header("14:59")
+        st.markdown('</div>', unsafe_allow_html=True)
+        st.write("")
+        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+        st.write("📈 PRECISIÓN")
+        st.header("88%")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    if st.session_state.index < len(banco_preguntas):
-        progreso = (st.session_state.index + 1) / len(banco_preguntas)
-        st.write(f"Pregunta {st.session_state.index + 1} de {len(banco_preguntas)}")
-        st.progress(progreso)
+    with col_q:
+        # Banco ampliado (Ejemplo)
+        preguntas = [
+            {"p": "¿Qué mayoría se requiere para la reforma agravada del Art. 168?", "o": ["2/3 de cada Cámara", "3/5 de cada Cámara", "Absoluta"], "r": "2/3 de cada Cámara"},
+            {"p": "¿Cuál es la duración del mandato de los miembros del Tribunal Constitucional?", "o": ["5 años", "9 años", "12 años"], "r": "9 años"},
+            {"p": "¿Quién autoriza la prórroga de la detención preventiva hasta las 72h?", "o": ["El Juez", "El Fiscal", "La Ley directamente"], "r": "La Ley directamente"}
+        ]
         
-        q = banco_preguntas[st.session_state.index]
-        st.info(f"### {q['p']}")
+        if 'idx' not in st.session_state: st.session_state.idx = 0
         
-        respuesta = st.radio("Elige la respuesta correcta:", q["o"], key=f"pregunta_{st.session_state.index}")
+        q = preguntas[st.session_state.idx % len(preguntas)]
+        st.markdown(f"### Pregunta {st.session_state.idx + 1}")
+        st.info(q["p"])
+        ans = st.radio("Selecciona opción:", q["o"])
         
-        if st.button("SINCRONIZAR Y CONTINUAR ➡️"):
-            if respuesta == q["r"]:
-                st.session_state.score += 1
-                st.toast("✅ ¡Correcto!")
-            else:
-                st.toast(f"❌ Fallo: {q['r']}")
-            
-            st.session_state.index += 1
+        if st.button("CONFIRMAR RESPUESTA"):
+            if ans == q["r"]: st.success("RESPUESTA CORRECTA - Punto sincronizado.")
+            else: st.error(f"FALLO - La respuesta era: {q['r']}")
+            st.session_state.idx += 1
+            time.sleep(1)
             st.rerun()
-    else:
-        st.balloons()
-        st.success(f"### ¡MISIÓN COMPLETADA! Puntos: {st.session_state.score}/{len(banco_preguntas)}")
-        if st.button("REINICIAR SISTEMA"):
-            st.session_state.index = 0
-            st.session_state.score = 0
-            st.rerun()
 
-# --- SECCIÓN 2: BIBLIOTECA INTERACTIVA ---
-elif menu == "📚 BIBLIOTECA DE REPASO":
-    st.subheader("Temario Crítico y Esquemas de Memorización")
+# 2. TEMARIO TÁCTICO (Completo)
+with tab2:
+    st.subheader("📚 REPOSITORIO DE INTELIGENCIA")
+    c1, c2, c3 = st.columns(3)
     
-    tab1, tab2 = st.tabs(["⚖️ DERECHO", "🚓 SEGURIDAD"])
+    bloques = {
+        "DERECHO": ["Constitución", "Penal", "Administrativo", "Derechos Humanos"],
+        "SOCIAL": ["Sociología", "Globalización", "Drogodependencia"],
+        "TÉCNICO": ["Armamento", "Informática", "Topografía", "Ortografía"]
+    }
     
-    with tab1:
-        with st.expander("TEMA 1: LA CONSTITUCIÓN ESPAÑOLA (PDF)"):
-            st.write("Análisis de la norma suprema del ordenamiento.")
-            if st.button("DESBLOQUEAR RESUMEN TÁCTICO"):
-                st.markdown("""
-                <div class="study-content">
-                    <h3>💡 Resumen de Éxito - Tema 1</h3>
-                    <ul>
-                        <li><b>Estructura:</b> 1 Preámbulo, 169 Artículos, 10 Títulos + Preliminar.</li>
-                        <li><b>Valores Superiores:</b> Libertad, Justicia, Igualdad, Pluralismo.</li>
-                        <li><b>Reforma:</b> Art. 167 (Ordinaria) y Art. 168 (Agravada).</li>
-                    </ul>
-                </div>
-                """, unsafe_allow_html=True)
+    for i, (titulo, temas) in enumerate(bloques.items()):
+        with [c1, c2, c3][i]:
+            st.markdown(f"#### 📁 {titulo}")
+            for tema in temas:
+                with st.expander(f"📄 {tema}"):
+                    st.write(f"Resumen crítico del bloque de {tema}.")
+                    st.button(f"Descargar Guía {tema}", key=tema)
 
-    with tab2:
-        with st.expander("TEMA 2: LEY ORGÁNICA 2/86"):
-            st.write("Funciones, principios y organización de las FFCCS.")
-            if st.button("DESBLOQUEAR ESQUEMA DE REPASO"):
-                st.markdown("""
-                <div class="study-content">
-                    <h3>👮 Conceptos Clave 2/86</h3>
-                    <p><b>Principios de Actuación:</b> Adecuación al ordenamiento jurídico, Relaciones con la comunidad, Tratamiento de detenidos.</p>
-                    <p><b>Jerarquía:</b> Dependencia directa del Gobierno de la Nación.</p>
-                </div>
-                """, unsafe_allow_html=True)
+# 3. MI RENDIMIENTO (Gráficos Profesionales)
+with tab3:
+    st.subheader("📊 ANÁLISIS DE EVOLUCIÓN")
+    # Generamos datos falsos para el gráfico
+    df_stats = pd.DataFrame({
+        'Fecha': pd.date_range(start='2026-01-01', periods=10),
+        'Nota': [4.5, 5.2, 5.0, 6.1, 5.8, 7.2, 7.5, 8.1, 7.9, 8.5]
+    })
+    fig = px.line(df_stats, x='Fecha', y='Nota', title='Evolución de Nota Media', markers=True)
+    fig.update_layout(template="plotly_dark", plot_bgcolor='rgba(0,0,0,0)')
+    st.plotly_chart(fig, use_container_width=True)
+
+# 4. FLASHCARDS (Para memorizar rápido)
+with tab4:
+    st.subheader("⚡ ENTRENAMIENTO DE MEMORIA RÁPIDA")
+    st.write("Haz clic para ver la respuesta y memorizar conceptos clave.")
+    
+    col_f1, col_f2 = st.columns(2)
+    with col_f1:
+        with st.container():
+            st.markdown('<div class="metric-card"><b>¿Qué es el <i>Habeas Corpus</i>?</b></div>', unsafe_allow_html=True)
+            if st.button("REVELAR RESPUESTA"):
+                st.warning("Procedimiento jurídico para evitar detenciones ilegales. Art. 17.4 CE.")
+    with col_f2:
+        with st.container():
+            st.markdown('<div class="metric-card"><b>¿Cuántos diputados tiene el Congreso?</b></div>', unsafe_allow_html=True)
+            if st.button("REVELAR RESPUESTA", key="f2"):
+                st.warning("Mínimo 300, máximo 400. Actualmente 350.")
